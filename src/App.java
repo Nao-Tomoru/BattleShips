@@ -5,23 +5,23 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class App {
     private static Random rand = new Random();
-    private static List<int[]> list = new ArrayList<int[]>();
+    private static List<Ship> list = new ArrayList<>();
     private static int length = 10; // lenght of columns and rows
     private static byte[][] gridArr = new byte[10][10]; // game grid
     // private static byte[][] gridArr = new byte[10][10]; //game grid
 
     public static void main(String[] args) { // main function
-        for (int i = 0; i < length; i++) {
+
+        for (int i = 0; i < length; i++) { // initialize field
             for (int j = 0; j < length; j++) {
                 gridArr[i][j] = 0;
             }
         }
-        generate();
-        print();
-        startGame();
+        generate(); // set ships
+        print(); // show field
+        startGame(); // start game
 
     }
 
@@ -60,13 +60,16 @@ public class App {
         short maxDestroyers = 2;
         short currentBattleships = 0;
         short currentDestroyers = 0;
-        int orientCoord;
-        int nonOrientCoord;
-        int orientInt;
         boolean orient;
         boolean isOk;
+        boolean isBattleShip = true;
 
         do {
+            int orientCoord = 0;
+            int nonOrientCoord = 0;
+            int orientInt = 0;
+            int lenOfShip = 0;
+
             orientInt = rand.nextInt(2);
             if (orientInt == 0)
                 orient = true; // horizontal
@@ -77,28 +80,31 @@ public class App {
 
                 nonOrientCoord = rand.nextInt(10);
                 orientCoord = rand.nextInt(5);
-                isOk = check(5, orient, orientCoord, nonOrientCoord);
-                if (isOk) {
-                    setShip(5, orient, orientCoord, nonOrientCoord);
-                    currentBattleships++;
-                }
-            }
-
-            if (currentDestroyers < maxDestroyers) {
+                lenOfShip = 5;
+                isBattleShip =true;
+            } else {
 
                 nonOrientCoord = rand.nextInt(10);
                 orientCoord = rand.nextInt(6);
-                isOk = check(4, orient, orientCoord, nonOrientCoord);
-                if (isOk) {
-                    setShip(4, orient, orientCoord, nonOrientCoord);
+                lenOfShip = 4;
+                isBattleShip = false;
+            }
+
+            isOk = check(lenOfShip, orient, orientCoord, nonOrientCoord);
+            if (isOk) {
+                setShip(lenOfShip, orient, orientCoord, nonOrientCoord);
+                if (isBattleShip) {
+                    currentBattleships++;
+                } else {
                     currentDestroyers++;
                 }
             }
+
         } while (currentBattleships != maxBattleships || currentDestroyers != maxDestroyers);
 
     }
-
-    public static Boolean check(int lenOfShip, boolean orient, int orientCoord, int nonOrientCoord) { // true -
+    public static Boolean check(int lenOfShip, boolean orient, int orientCoord, int nonOrientCoord) { //check if place for a ship is free
+                                                                                                      // true -
                                                                                                       // horizontal,
                                                                                                       // false -
                                                                                                       // vertical
@@ -117,22 +123,14 @@ public class App {
         return isOk;
     }
 
-    public static void setShip(int lenOfShip, boolean orient, int orientCoord, int nonOrientCoord) {
-        int[] ship = new int[4];
+    public static void setShip(int lenOfShip, boolean orient, int orientCoord, int nonOrientCoord) { // put ship on the field
+        Ship ship = new Ship(lenOfShip, orient, orientCoord, nonOrientCoord);
         for (int i = 0; i < lenOfShip; i++) {
             if (orient) {
                 gridArr[nonOrientCoord][orientCoord + i] = 1;
             } else
                 gridArr[orientCoord + i][nonOrientCoord] = 1;
         }
-        ship[0] = orientCoord;
-        ship[1] = nonOrientCoord;
-        if (orient) {
-            ship[2] = 0;
-        } else {
-            ship[2] = 1;
-        }
-        ship[3] = lenOfShip;
         list.add(ship);
     }
 
@@ -152,13 +150,13 @@ public class App {
             }
 
             cmd = command.toUpperCase().toCharArray();
-            x = (int) cmd[0] - 65;
+            x = cmd[0] - 65;
             char[] c = new char[] { cmd[1], cmd[2] };
             y = Integer.parseInt(new String(c).strip()) - 1;
             if (y > 9) {
                 continue;
             }
-            if (gridArr[x][y] == 1) {
+            if (gridArr[x][y] == 1 || gridArr[x][y] == 2) {
                 gridArr[x][y] = 2;
             } else {
                 gridArr[x][y] = -1;
@@ -173,13 +171,13 @@ public class App {
 
     public static boolean checkShips() {
         for (int i = 0; i < list.size(); i++) {
-            int[] curShip = list.get(i);
-            for (int j = 0; j < curShip[3]; j++) {
-                if (curShip[2] == 0) {
-                    if (gridArr[curShip[1]][curShip[0] + j] != 2) {
+            Ship curShip = list.get(i);
+            for (int j = 0; j < curShip.getLenOfShip(); j++) {
+                if (curShip.getOrient()) {
+                    if (gridArr[curShip.getNonOrientCoord()][curShip.getOrientCoord() + j] != 2) {
                         return false;
                     }
-                } else if (gridArr[curShip[0] + j][curShip[1]] != 2) {
+                } else if (gridArr[curShip.getOrientCoord() + j][curShip.getNonOrientCoord()] != 2) {
                     return false;
                 }
             }
