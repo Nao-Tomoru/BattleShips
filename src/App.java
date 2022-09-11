@@ -10,7 +10,6 @@ public class App {
     private static List<Ship> list = new ArrayList<>();
     private static int length = 10; // lenght of columns and rows
     private static byte[][] gridArr = new byte[10][10]; // game grid
-    // private static byte[][] gridArr = new byte[10][10]; //game grid
 
     public static void main(String[] args) { // main function
 
@@ -177,19 +176,26 @@ public class App {
         String command;
         char[] cmd;
         int x, y;
-        Pattern pattern = Pattern.compile("[abcdefghij][\\d]{1,2}", Pattern.CASE_INSENSITIVE); // regex pattern for
-                                                                                               // input check
+        Pattern pattern = Pattern.compile("^[a-j][\\d]{1,2}$", Pattern.CASE_INSENSITIVE); // regex pattern for
+                                                                                          // input check
         Matcher matcher;
         do {
-            command = scn.nextLine() + " "; // adding space to prevent out-of-bounds in parsing
+            command = scn.nextLine(); // adding space to prevent out-of-bounds in parsing
             matcher = pattern.matcher(command);
             if (!matcher.find()) {
                 continue;
             }
             cmd = command.toUpperCase().toCharArray();
             x = cmd[0] - 65; // converting char to int
-            char[] c = new char[] { cmd[1], cmd[2] }; // getting last to characters from input string
-            y = Integer.parseInt(new String(c).strip()) - 1;
+            char[] c;
+            if (cmd.length >= 3) {
+                c = new char[] { cmd[1], cmd[2] }; // getting last to characters from input string
+                if (!Character.isDigit(cmd[2]) || cmd[1] == '0')
+                    continue;
+            } else
+                c = new char[] { cmd[1] };
+
+            y = Integer.parseInt(new String(c)) - 1;
             if (y > 9 || y < 0) {// check if number part is correct
                 continue;
             }
@@ -209,10 +215,10 @@ public class App {
     public static boolean checkShips() {
 
         int partsDestroyed;
-        for (int i = 0; i < list.size(); i++) { //getting amount of ships
+        for (int i = 0; i < list.size(); i++) { // getting amount of ships
             partsDestroyed = 0;
             Ship curShip = list.get(i);
-            for (int j = 0; j < curShip.getLenOfShip(); j++) { //check on how many parts destroyed
+            for (int j = 0; j < curShip.getLenOfShip(); j++) { // check on how many parts destroyed
                 if (curShip.getOrient()) {
                     if (gridArr[curShip.getNonOrientCoord()][curShip.getOrientCoord() + j] == 2) {
                         partsDestroyed++;
@@ -226,7 +232,7 @@ public class App {
                 list.remove(i); // delete ship
             }
         }
-        return list.isEmpty(); //return if there are any more ships
+        return list.isEmpty(); // return if there are any more ships
 
     }
 }
