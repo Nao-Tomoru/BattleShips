@@ -199,10 +199,15 @@ public class App {
             if (y > 9 || y < 0) {// check if number part is correct
                 continue;
             }
-            if (gridArr[x][y] == 1 || gridArr[x][y] == 2) { // check if it is a hit on the ship
-                gridArr[x][y] = 2;
-            } else {
-                gridArr[x][y] = -1;
+            switch (gridArr[x][y]) {
+                case 1:
+                case 2:
+                    gridArr[x][y]=2;
+                    break;
+            
+                default:
+                    gridArr[x][y]=-1;
+                    break;
             }
             isAllDestroyed = checkShips();
             print(command); // draw a new field
